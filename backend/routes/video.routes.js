@@ -6,6 +6,6 @@ const router = Router();
 
 router.route('/getAll').get(getAllVideos);
 router.route('/increaseView').get(increaseViewCount);
-router.route('/create').post(createVideo);
+router.route('/createVideo').post(createVideo);
 
 export default router;

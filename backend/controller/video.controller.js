@@ -4,6 +4,7 @@ const createVideo = async (req, res) => {
     try {
         const { title, description, videoUrl, thumbnailUrl, duration } = req.body;
         const newVideo = new Video({ title, description, videoUrl, thumbnailUrl, duration });
+        console.log(req.body)
         const savedVideo = await newVideo.save();
         res.status(201).json(savedVideo);
     } catch (error) {

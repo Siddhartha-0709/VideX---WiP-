@@ -1,11 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, Plus, Video, Clock, Search, Bell, User, Menu, X, TrendingUp, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
 import Dashboard from './Components/Dashboard';
 import VideoPlayer from './Components/VideoPlayer';
 import CreateStream from './Components/CreateStream';
-const API_BASE = 'http://localhost:8900/api/v1/streams';
-
-
+import CreateVideo from './Components/CreateVideo';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -20,6 +17,10 @@ export default function App() {
     setCurrentPage('dashboard');
   };
 
+  const handleVideoCreated = () => {
+    setCurrentPage('dashboard');
+  };
+
   return (
     <div className="min-h-screen bg-black">
       <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -27,6 +28,7 @@ export default function App() {
       {currentPage === 'dashboard' && (
         <Dashboard
           onCreateClick={() => setCurrentPage('create')}
+          onCreateVideoClick={() => setCurrentPage('createVideo')}
           onPlayStream={handlePlayStream}
         />
       )}
@@ -42,6 +44,13 @@ export default function App() {
         <VideoPlayer
           stream={selectedStream}
           onBack={() => setCurrentPage('dashboard')}
+        />
+      )}
+
+      {currentPage === 'createVideo' && (
+        <CreateVideo
+          onBack={() => setCurrentPage('dashboard')}
+          onVideoCreated={handleVideoCreated}
         />
       )}
     </div>

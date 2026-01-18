@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Plus, Video, Clock, Search, Bell, User, Menu, X, TrendingUp, Sparkles } from 'lucide-react';
+import { Play, Plus, Video, Clock, Search, Bell, User, Menu, X, TrendingUp, Sparkles, Videotape } from 'lucide-react';
 const API_BASE = 'http://210.79.128.211:8900/api/v1/streams';
 
-const Dashboard = ({ onCreateClick, onPlayStream }) => {
+const Dashboard = ({ onCreateClick, onCreateVideoClick, onPlayStream }) => {
   const [streams, setStreams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -55,7 +55,7 @@ const Dashboard = ({ onCreateClick, onPlayStream }) => {
                     <Video className="w-6 h-6 text-white" />
                   </div>
                 </div>
-                <h1 className="text-xl font-bold text-white">StreamX</h1>
+                <h1 className="text-xl font-bold text-white">VideX</h1>
               </div>
             </div>
 
@@ -73,10 +73,18 @@ const Dashboard = ({ onCreateClick, onPlayStream }) => {
 
               <button
                 onClick={onCreateClick}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-full transition-all shadow-lg shadow-blue-500/25"
+                className="group p-2 hover:bg-white/10 rounded-full transition-colors relative"
+                title="Create Live Stream"
               >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Create</span>
+                <Video className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
+              </button>
+              
+              <button 
+                onClick={onCreateVideoClick}
+                className="group p-2 hover:bg-white/10 rounded-full transition-colors relative"
+                title="Upload Video"
+              >
+                <Videotape className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
               </button>
 
               <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
@@ -199,7 +207,6 @@ const Dashboard = ({ onCreateClick, onPlayStream }) => {
                     </p>
                     <div className="flex items-center justify-between text-xs text-white/40">
                       <span>{formatDate(stream.createdAt)}</span>
-                      {/* <span className="px-2 py-1 bg-white/5 rounded">{stream.streamKey}</span> */}
                     </div>
                   </div>
                 </div>
@@ -212,4 +219,4 @@ const Dashboard = ({ onCreateClick, onPlayStream }) => {
   );
 };
 
-export default Dashboard
+export default Dashboard;
