@@ -1,38 +1,48 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Plus, Video, Clock, Search, Bell, User, Menu, X, TrendingUp, Sparkles } from 'lucide-react';
-const API_BASE = 'http://localhost:8900/api/v1/streams';
-
-
 
 const VideoPlayer = ({ stream, onBack }) => {
     const videoRef = useRef(null);
     const [error, setError] = useState(null);
 
-
     console.log(stream);
     const status = stream.status;
+    const isVideo = !!stream?.videoUrl; // Check if it's a video (has videoUrl)
+    const isStream = !!stream?.hlsUrl; // Check if it's a stream (has hlsUrl)
+
     useEffect(() => {
-        if (!stream?.hlsUrl || !videoRef.current) return;
+        if (!videoRef.current) return;
 
-        if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
-            videoRef.current.src = stream.hlsUrl;
-        } else if (window.Hls && window.Hls.isSupported()) {
-            const hls = new window.Hls();
-            hls.loadSource(stream.hlsUrl);
-            hls.attachMedia(videoRef.current);
-
-            hls.on(window.Hls.Events.ERROR, (event, data) => {
-                if (data.fatal) {
-                    setError('Failed to load video stream');
-                }
-            });
-
-            return () => hls.destroy();
-        } else {
-            setError('HLS playback not supported in this browser');
+        // Handle regular video files (MP4, etc.)
+        if (isVideo && stream.videoUrl) {
+            videoRef.current.src = stream.videoUrl;
+            return;
         }
-    }, [stream?.hlsUrl]);
+
+        // Handle HLS streams
+        if (isStream && stream.hlsUrl) {
+            // Native HLS support (Safari)
+            if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
+                videoRef.current.src = stream.hlsUrl;
+            } 
+            // HLS.js for other browsers
+            else if (window.Hls && window.Hls.isSupported()) {
+                const hls = new window.Hls();
+                hls.loadSource(stream.hlsUrl);
+                hls.attachMedia(videoRef.current);
+
+                hls.on(window.Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        setError('Failed to load video stream');
+                    }
+                });
+
+                return () => hls.destroy();
+            } else {
+                setError('HLS playback not supported in this browser');
+            }
+        }
+    }, [stream?.hlsUrl, stream?.videoUrl, isVideo, isStream]);
 
     return (
         <>
@@ -47,14 +57,11 @@ const VideoPlayer = ({ stream, onBack }) => {
                                         <Video className="w-6 h-6 text-white" />
                                     </div>
                                 </div>
-                                <h1 className="text-xl font-bold text-white">StreamX</h1>
+                                <h1 className="text-xl font-bold text-white">VideX</h1>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-4">
-
-
-
                         </div>
                     </div>
                 </div>
@@ -103,29 +110,31 @@ const VideoPlayer = ({ stream, onBack }) => {
                                     <Clock className="w-4 h-4" />
                                     <span>{new Date(stream?.createdAt).toLocaleDateString()}</span>
                                 </div>
-                                {status==="live" &&
+                                {status === "live" &&
                                     <div className="flex items-center gap-2 px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-full">
                                         <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                                         <span className="text-red-400 font-semibold">LIVE</span>
                                     </div>
                                 }
-                                {
-                                    status==="idle" &&
+                                {status === "idle" &&
                                     <div className="flex items-center gap-2 px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded-full">
                                         <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
                                         <span className="text-yellow-400 font-semibold">IDLE</span>
                                     </div>
                                 }
-                                
+                                {isVideo && stream.views !== undefined &&
+                                    <div className="flex items-center gap-2">
+                                        <Play className="w-4 h-4" />
+                                        <span>{stream.views.toLocaleString()} views</span>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </>
-
     );
 };
 
-
-export default VideoPlayer
+export default VideoPlayer;

@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Plus, Video, Clock, Search, Bell, User, Menu, X, TrendingUp, Sparkles, Videotape } from 'lucide-react';
-const API_BASE = 'http://210.79.128.211:8900/api/v1/streams';
+
+const API_BASE = 'http://210.79.128.211:8900/api/v1';
 
 const Dashboard = ({ onCreateClick, onCreateVideoClick, onPlayStream }) => {
   const [streams, setStreams] = useState([]);
+  const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [videosLoading, setVideosLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [videosError, setVideosError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   const fetchStreams = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/getAllStreams`);
+      const response = await fetch(`${API_BASE}/streams/getAllStreams`);
       const data = await response.json();
-      console.log(data);
+      console.log('Streams:', data);
       setStreams(Array.isArray(data[0]) ? data[0] : data);
       setError(null);
     } catch (error) {
@@ -24,13 +28,35 @@ const Dashboard = ({ onCreateClick, onCreateVideoClick, onPlayStream }) => {
     }
   };
 
+  const fetchVideos = async () => {
+    try {
+      setVideosLoading(true);
+      const response = await fetch(`${API_BASE}/videos/getAll`);
+      const data = await response.json();
+      console.log('Videos:', data);
+      setVideos(Array.isArray(data[0]) ? data[0] : data);
+      setVideosError(null);
+    } catch (error) {
+      console.log(error);
+      setVideosError('Failed to load videos');
+    } finally {
+      setVideosLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchStreams();
+    fetchVideos();
   }, []);
 
   const filteredStreams = streams.filter(stream =>
     stream.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     stream.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredVideos = videos.filter(video =>
+    video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    video.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const formatDate = (dateString) => {
@@ -39,6 +65,21 @@ const Dashboard = ({ onCreateClick, onCreateVideoClick, onPlayStream }) => {
       day: 'numeric',
       year: 'numeric'
     });
+  };
+
+  const formatDuration = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatViews = (views) => {
+    if (views >= 1000000) {
+      return `${(views / 1000000).toFixed(1)}M`;
+    } else if (views >= 1000) {
+      return `${(views / 1000).toFixed(1)}K`;
+    }
+    return views.toString();
   };
 
   return (
@@ -106,7 +147,7 @@ const Dashboard = ({ onCreateClick, onCreateVideoClick, onPlayStream }) => {
             <TrendingUp className="w-6 h-6 text-blue-500" />
             <h2 className="text-2xl font-bold text-white">Live Now</h2>
           </div>
-          <p className="text-white/50 text-lg mb-8">Watch the hottest streams from around the world. . .</p>
+          <p className="text-white/50 text-lg mb-8">Watch the hottest streams from around the world</p>
 
           {/* Search for mobile */}
           <div className="sm:hidden flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl mb-6">
@@ -189,10 +230,7 @@ const Dashboard = ({ onCreateClick, onCreateVideoClick, onPlayStream }) => {
                           Upcoming
                         </span>
                       </div>
-
                     ) : null}
-
-
 
                     <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/70 backdrop-blur-sm rounded text-white text-xs font-medium">
                     </div>
@@ -207,6 +245,93 @@ const Dashboard = ({ onCreateClick, onCreateVideoClick, onPlayStream }) => {
                     </p>
                     <div className="flex items-center justify-between text-xs text-white/40">
                       <span>{formatDate(stream.createdAt)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Videos Section */}
+      <div className="bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex items-center gap-3 mb-8">
+            <Sparkles className="w-6 h-6 text-purple-500" />
+            <h2 className="text-2xl font-bold text-white">Videos</h2>
+          </div>
+
+          {videosLoading ? (
+            <div className="flex justify-center items-center h-96">
+              <div className="text-center">
+                <svg className="animate-spin h-12 w-12 mx-auto mb-4 text-purple-500" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <p className="text-white/60">Loading videos...</p>
+              </div>
+            </div>
+          ) : videosError ? (
+            <div className="flex justify-center items-center h-96">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 flex items-center justify-center">
+                  <X className="w-8 h-8 text-red-500" />
+                </div>
+                <p className="text-red-400 text-lg">{videosError}</p>
+              </div>
+            </div>
+          ) : filteredVideos.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-96 text-white/40">
+              <Videotape className="w-20 h-20 mb-4 opacity-30" />
+              <p className="text-xl mb-2">
+                {searchQuery ? 'No videos found' : 'No videos available'}
+              </p>
+              <p className="text-sm">
+                {searchQuery ? 'Try a different search term' : 'Upload your first video to get started'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredVideos.map((video) => (
+                <div
+                  key={video._id}
+                  className="group cursor-pointer"
+                  onClick={() => onPlayStream(video)}
+                >
+                  <div className="relative aspect-[16/10] bg-zinc-900 rounded-xl overflow-hidden mb-3">
+                    <img
+                      src={video.thumbnailUrl}
+                      alt={video.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="250"%3E%3Crect fill="%2318181b" width="400" height="250"/%3E%3Ctext fill="%2371717a" font-family="sans-serif" font-size="16" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3ENo Thumbnail%3C/text%3E%3C/svg%3E';
+                      }}
+                    />
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="p-4 bg-white/20 backdrop-blur-sm rounded-full">
+                        <Play className="w-8 h-8 text-white fill-white" />
+                      </div>
+                    </div>
+
+                    <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/70 backdrop-blur-sm rounded text-white text-xs font-medium">
+                      {formatDuration(video.duration)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-white font-semibold mb-1 line-clamp-2 group-hover:text-purple-400 transition-colors">
+                      {video.title}
+                    </h3>
+                    <p className="text-white/50 text-sm line-clamp-1 mb-2">
+                      {video.description}
+                    </p>
+                    <div className="flex items-center justify-between text-xs text-white/40">
+                      <span>{formatViews(video.views)} views</span>
+                      <span>{formatDate(video.createdAt)}</span>
                     </div>
                   </div>
                 </div>
