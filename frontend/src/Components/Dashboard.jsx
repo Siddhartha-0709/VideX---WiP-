@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Plus, Video, Clock, Search, Bell, User, Menu, X, TrendingUp, Sparkles } from 'lucide-react';
-const API_BASE = 'http://localhost:8900/api/v1/streams';
+const API_BASE = 'http://210.79.128.211:8900/api/v1/streams';
 
 const Dashboard = ({ onCreateClick, onPlayStream }) => {
   const [streams, setStreams] = useState([]);

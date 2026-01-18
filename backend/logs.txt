@@ -1,0 +1,8 @@
+
+> videx-backend@1.0.0 start
+> node index.js
+
+Connecting to MongoDB...
+MongoDB Connected: localhost
+MongoDB Connected
+Server is running on port 8900
