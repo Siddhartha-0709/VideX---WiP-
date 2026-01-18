@@ -1,0 +1,10 @@
+Stream Details
+RTMP Server
+
+rtmp://210.79.128.211/live
+Stream Key
+
+2e0ccc2e39f89e2adc59c800a56f57c7
+HLS Playback URL
+
+http://210.79.128.211/hls/2e0ccc2e39f89e2adc59c800a56f57c7.m3u8
